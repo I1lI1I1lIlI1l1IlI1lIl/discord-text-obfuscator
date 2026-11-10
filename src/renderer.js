@@ -64,24 +64,30 @@
 
   var Dispatcher = null;
 
-  var ENC_SUFFIX = " /enc";
+  var ENC_SUFFIX = " ᵉⁿᶜ";
+  var ENC_SUFFIX_OLD = " /enc";
 
-  function stripEncSuffix(content) {
-    if (content.length > ENC_SUFFIX.length && content.slice(-ENC_SUFFIX.length) === ENC_SUFFIX) {
-      return content.slice(0, -ENC_SUFFIX.length);
-    }
-    return content;
+  function encMarkOf(content) {
+    if (content.length > ENC_SUFFIX.length && content.slice(-ENC_SUFFIX.length) === ENC_SUFFIX) return ENC_SUFFIX;
+    if (content.length > ENC_SUFFIX_OLD.length && content.slice(-ENC_SUFFIX_OLD.length) === ENC_SUFFIX_OLD) return ENC_SUFFIX_OLD;
+    return null;
+  }
+
+  function stripEncMark(content) {
+    var mark = encMarkOf(content);
+    return mark ? content.slice(0, -mark.length) : content;
   }
 
   function tryDecryptContent(msg) {
     if (!msg || typeof msg.content !== 'string' || !msg.content) return false;
-    var content = stripEncSuffix(msg.content);
+    var mark = encMarkOf(msg.content);
+    var content = mark ? msg.content.slice(0, -mark.length) : msg.content;
     if (!content.trim()) return false;
 
     if (AV3Core.v2 && AV3Core.v2.looksLike(content)) {
       var pt2 = AV3Core.v2.decryptTokens(content);
       if (pt2 != null && pt2.length) {
-        msg.content = pt2;
+        msg.content = pt2 + ENC_SUFFIX;
         return true;
       }
     }
@@ -175,7 +181,7 @@
 
   function encryptOut(content) {
     if (!cfg.enabled) return content;
-    if (AV3Core.v2) return AV3Core.v2.encryptTokens(content) + ENC_SUFFIX;
+    if (AV3Core.v2) return AV3Core.v2.encryptTokens(stripEncMark(content)) + ENC_SUFFIX;
     return content;
   }
 
