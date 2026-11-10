@@ -16,8 +16,6 @@ OPENASAR_URL = "https://github.com/GooseMod/OpenAsar/releases/download/nightly/a
 class InstallError(Exception):
     pass
 
-
-# don't let child tools flash their own console windows
 CREATE_NO_WINDOW = 0x08000000
 
 
@@ -88,9 +86,6 @@ def launch_discord(flavor="Discord"):
     local = os.environ.get("LOCALAPPDATA") or ""
     update_exe = os.path.join(local, flavor, "Update.exe")
     if os.path.isfile(update_exe):
-        # CREATE_NO_WINDOW keeps Squirrel's console-subsystem Update.exe from
-        # flashing/sticking a console window; it is incompatible with
-        # DETACHED_PROCESS, so only CREATE_NO_WINDOW is used here
         subprocess.Popen([update_exe, "--processStart", _exe_name(flavor)],
                          creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW)
     else:
