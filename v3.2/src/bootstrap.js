@@ -49,23 +49,19 @@
   app.on('web-contents-created', function (_e, wc) {
     if (!payload) return;
 
-    var inject = function () {
-      var url = '', type = '';
-      try { url = wc.getURL() || ''; } catch (e) { }
-      try { type = wc.getType(); } catch (e) { }
-      if (type !== 'window') return;
-      if (!looksLikeDiscordUrl(url)) return;
-      if (wc.__av3Injected) return;
-      wc.__av3Injected = true;
-      var state = {};
-      try { state = JSON.parse(fs.readFileSync(STORE, 'utf8')) || {}; } catch (e) { }
-      var script = 'window.AV3_CONFIG = ' + JSON.stringify(cfg) + ';\n' +
-        'window.AV3_STATE = ' + JSON.stringify(state) + ';\n' +
-        'window.AV3_SAVE = ' + SAVE_SRC + ';\n' + payload;
-      wc.executeJavaScript(script, true).catch(function () {
-        wc.__av3Injected = false;
-      });
-    };
+  var inject = function () {
+    var url = '', type = '';
+    try { url = wc.getURL() || ''; } catch (e) { }
+    try { type = wc.getType(); } catch (e) { }
+    if (type !== 'window') return;
+    if (!looksLikeDiscordUrl(url)) return;
+    var state = {};
+    try { state = JSON.parse(fs.readFileSync(STORE, 'utf8')) || {}; } catch (e) { }
+    var script = 'window.AV3_CONFIG = ' + JSON.stringify(cfg) + ';\n' +
+      'window.AV3_STATE = ' + JSON.stringify(state) + ';\n' +
+      'window.AV3_SAVE = ' + SAVE_SRC + ';\n' + payload;
+    wc.executeJavaScript(script, true).catch(function () { });
+  };
     try { wc.on('dom-ready', inject); } catch (e) { }
     wc.on('did-finish-load', inject);
   });
